@@ -29,14 +29,41 @@ const DESTINATIONS = [
   { id: 12, name: "Maldives",     country: "Maldives",     tag: "beach",     emoji: "🏖", price: "$1,350",rating: "5.0", img: "https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=600&q=75", search: "Maldives" },
 ];
 
-const DEALS = [
-  { icon: "✈",  title: "New York → London",   route: "Round trip · Sep 12–20",   price: "$389", original: "$720",  pct: "46% off", type: "flights"    },
-  { icon: "✈",  title: "LA → Tokyo",           route: "Round trip · Oct 3–14",    price: "$542", original: "$980",  pct: "45% off", type: "flights"    },
-  { icon: "🏨", title: "4★ Bali Resort",       route: "7 nights · All inclusive", price: "$640", original: "$1,100",pct: "42% off", type: "hotels"     },
-  { icon: "✈",  title: "Chicago → Cancun",     route: "Round trip · Nov 1–8",     price: "$249", original: "$490",  pct: "49% off", type: "flights"    },
-  { icon: "🏨", title: "Paris Boutique Hotel", route: "5 nights · Breakfast incl",price: "$480", original: "$790",  pct: "39% off", type: "hotels"     },
-  { icon: "🎯", title: "Rome Food Tour",        route: "4-hour guided experience", price: "$45",  original: "$90",   pct: "50% off", type: "activities" },
+const FEED_SOURCES = [
+  { name: "The Points Guy",    url: "https://thepointsguy.com/feed/",            short: "TPG"   },
+  { name: "One Mile at a Time",url: "https://onemileatatime.com/feed/",          short: "OMAAT" },
+  { name: "View from the Wing",url: "https://viewfromthewing.com/feed/",         short: "VFTW"  },
+  { name: "Upgraded Points",   url: "https://upgradedpoints.com/feed/",          short: "UP"    },
+  { name: "God Save the Points",url: "https://godsavethepoints.com/feed/",       short: "GSTP"  },
 ];
+
+const AMEX_KEYWORDS = [
+  "amex","membership rewards","transfer bonus","sweet spot","award","points",
+  "avios","flying blue","skymiles","aeroplan","lifemiles","krisflyer",
+  "asia miles","miles & smiles","skywards","business class","first class"
+];
+
+const TRANSFER_PARTNERS = {
+  airlines: [
+    { flag:"🇺🇸", name:"Delta Air Lines",      program:"SkyMiles",          ratio:"1:1",  cpp:"0.7¢", url:"https://www.delta.com/us/en/skymiles/award-travel/book-a-flight" },
+    { flag:"🇫🇷", name:"Air France / KLM",     program:"Flying Blue",       ratio:"1:1",  cpp:"1.2¢", url:"https://wwws.airfrance.us/en/information/flying-blue" },
+    { flag:"🇬🇧", name:"British Airways",       program:"Avios",             ratio:"1:1",  cpp:"1.5¢", url:"https://www.britishairways.com/travel/redeem/execclub/_gf/en_us" },
+    { flag:"🇸🇬", name:"Singapore Airlines",    program:"KrisFlyer",         ratio:"1:1",  cpp:"1.8¢", url:"https://www.singaporeair.com/en_UK/us/plan-travel/krisflyer/use-miles/book-award-ticket/" },
+    { flag:"🇯🇵", name:"ANA",                   program:"Mileage Club",      ratio:"1:1",  cpp:"2.1¢", url:"https://www.ana.co.jp/en/us/amc/awardticket/" },
+    { flag:"🇦🇪", name:"Emirates",              program:"Skywards",          ratio:"1:1",  cpp:"1.4¢", url:"https://www.emirates.com/us/english/skywards/use-miles/flights/" },
+    { flag:"🇨🇴", name:"Avianca",               program:"LifeMiles",         ratio:"1:1",  cpp:"1.6¢", url:"https://www.lifemiles.com/buy/searchawards" },
+    { flag:"🇨🇦", name:"Air Canada",            program:"Aeroplan",          ratio:"1:1",  cpp:"1.5¢", url:"https://www.aircanada.com/ca/en/aco/home/aeroplan/redeem/flights.html" },
+    { flag:"🇭🇰", name:"Cathay Pacific",        program:"Asia Miles",        ratio:"1:1",  cpp:"1.3¢", url:"https://www.cathaypacific.com/cx/en_US/asia-miles/use-miles/award-flights.html" },
+    { flag:"🇦🇺", name:"Qantas",                program:"Frequent Flyer",    ratio:"1:1",  cpp:"1.4¢", url:"https://www.qantas.com/au/en/frequent-flyer/use-points/fly-with-qantas.html" },
+    { flag:"🇹🇷", name:"Turkish Airlines",      program:"Miles & Smiles",    ratio:"1:1",  cpp:"2.0¢", url:"https://www.turkishairlines.com/en-us/miles-and-smiles/award-tickets/" },
+    { flag:"🇬🇧", name:"Virgin Atlantic",       program:"Flying Club",       ratio:"1:1",  cpp:"1.5¢", url:"https://www.virginatlantic.com/us/en/flying-club/reward-flights.html" },
+  ],
+  hotels: [
+    { flag:"🟦", name:"Hilton",                  program:"Honors",            ratio:"1:2",  cpp:"0.5¢", url:"https://www.hilton.com/en/hilton-honors/points/" },
+    { flag:"🟠", name:"Marriott",                program:"Bonvoy",            ratio:"1:1",  cpp:"0.7¢", url:"https://www.marriott.com/loyalty/redeem/travel/findHotel.mi" },
+    { flag:"🟩", name:"Choice Hotels",           program:"Privileges",        ratio:"1:1.5",cpp:"0.6¢", url:"https://www.choicehotels.com/choice-privileges/redeem" },
+  ],
+};
 
 const PACKING_LISTS = {
   "👔 Documents & Money": ["Passport / ID", "Travel insurance", "Flight tickets", "Hotel confirmation", "Credit cards", "Cash (local currency)", "Vaccination records"],
@@ -67,7 +94,6 @@ let activeFilter = 'all';
 document.addEventListener('DOMContentLoaded', () => {
   populateAirports();
   renderDestinations('all');
-  renderDeals();
   renderPackingList();
   setDefaultDates();
   initTabs();
@@ -81,6 +107,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initSavedTrips();
   initNavScroll();
   initFooterLinks();
+  initRefreshDeals();
+  renderTransferPartners('airlines');
+  initPartnerTabs();
   updateSavedBadge();
 });
 
@@ -112,15 +141,6 @@ function setDefaultDates() {
   document.getElementById('hotelCheckin').min    = fmt(today);
   document.getElementById('hotelCheckout').value = fmt(checkout);
   document.getElementById('hotelCheckout').min   = fmt(today);
-  document.getElementById('activityDate').value  = fmt(depart);
-  document.getElementById('activityDate').min    = fmt(today);
-
-  const nowLocal = new Date(today.getTime() - today.getTimezoneOffset() * 60000);
-  const dtFmt = d => d.toISOString().slice(0,16);
-  const pickupDT = new Date(nowLocal); pickupDT.setDate(nowLocal.getDate() + 30);
-  const dropDT   = new Date(nowLocal); dropDT.setDate(nowLocal.getDate() + 37);
-  document.getElementById('carPickupDate').value  = dtFmt(pickupDT);
-  document.getElementById('carDropoffDate').value = dtFmt(dropDT);
 }
 
 /* ===== TABS ===== */
@@ -227,33 +247,92 @@ function renderDestinations(filter) {
   });
 }
 
-/* ===== RENDER DEALS ===== */
-function renderDeals() {
-  const grid = document.getElementById('dealsGrid');
-  grid.innerHTML = DEALS.map((deal, i) => `
-    <div class="deal-card fade-up" style="animation-delay:${i * 80}ms" data-type="${deal.type}">
-      <div class="deal-icon">${deal.icon}</div>
-      <div class="deal-info">
-        <div class="deal-title">${deal.title}</div>
-        <div class="deal-route">${deal.route}</div>
-        <div class="deal-price-row">
-          <span class="deal-price">${deal.price}</span>
-          <span class="deal-original">${deal.original}</span>
-        </div>
-      </div>
-      <span class="deal-badge">${deal.pct}</span>
+/* ===== REFRESH / FEED DEALS ===== */
+function initRefreshDeals() {
+  document.getElementById('refreshDealsBtn').addEventListener('click', fetchDeals);
+}
+
+async function fetchDeals() {
+  const btn    = document.getElementById('refreshDealsBtn');
+  const icon   = document.getElementById('refreshIcon');
+  const grid   = document.getElementById('dealsGrid');
+  const status = document.getElementById('feedStatus');
+
+  btn.disabled = true;
+  icon.classList.add('spinning');
+  status.textContent = 'Fetching latest deals…';
+  status.className   = 'feed-status';
+
+  // Show skeleton cards while loading
+  grid.innerHTML = Array(6).fill(0).map(() => `
+    <div class="skeleton-card">
+      <div class="skeleton-line" style="width:40%;height:10px"></div>
+      <div class="skeleton-line" style="width:90%"></div>
+      <div class="skeleton-line" style="width:75%"></div>
+      <div class="skeleton-line" style="width:55%;height:10px"></div>
     </div>
   `).join('');
 
-  grid.querySelectorAll('.deal-card').forEach((card, i) => {
-    card.addEventListener('click', () => {
-      const deal = DEALS[i];
-      const tab = document.querySelector(`.tab[data-tab="${deal.type}"]`);
-      if (tab) { tab.click(); }
-      document.getElementById('search-section').scrollIntoView({ behavior: 'smooth' });
-      showToast(`Opening ${deal.type} search for "${deal.title}"`);
-    });
+  const proxy = 'https://api.rss2json.com/v1/api.json?count=5&rss_url=';
+  const results = await Promise.allSettled(
+    FEED_SOURCES.map(src =>
+      fetch(proxy + encodeURIComponent(src.url))
+        .then(r => r.json())
+        .then(data => ({ src, items: data.items || [] }))
+    )
+  );
+
+  const allArticles = [];
+  results.forEach(r => {
+    if (r.status === 'fulfilled') {
+      r.value.items.forEach(item => {
+        allArticles.push({ src: r.value.src, item });
+      });
+    }
   });
+
+  // Filter to points-relevant articles
+  const relevant = allArticles.filter(({ item }) => {
+    const text = ((item.title || '') + ' ' + (item.description || '')).toLowerCase();
+    return AMEX_KEYWORDS.some(kw => text.includes(kw));
+  });
+
+  const toShow = (relevant.length > 0 ? relevant : allArticles).slice(0, 12);
+
+  icon.classList.remove('spinning');
+  btn.disabled = false;
+
+  if (toShow.length === 0) {
+    grid.innerHTML = '<div class="feed-placeholder"><div class="feed-placeholder-icon">😕</div><p>Could not load feeds right now. Check your connection and try again.</p></div>';
+    status.textContent = 'No results — try again in a moment.';
+    status.className   = 'feed-status error';
+    return;
+  }
+
+  const fetched = relevant.length > 0 ? relevant.length : allArticles.length;
+  status.textContent = `✓ Loaded ${toShow.length} articles from ${FEED_SOURCES.length} sources · ${new Date().toLocaleTimeString()}`;
+  status.className   = 'feed-status success';
+
+  grid.innerHTML = toShow.map(({ src, item }, i) => {
+    const snippet = (item.description || '')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&[a-z]+;/gi, ' ')
+      .trim()
+      .slice(0, 180);
+    const date = item.pubDate ? new Date(item.pubDate).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '';
+    return `
+      <a class="feed-card fade-up" style="animation-delay:${i*50}ms"
+         href="${item.link}" target="_blank" rel="noopener">
+        <span class="feed-card-source">${src.short}</span>
+        <div class="feed-card-title">${item.title || 'Untitled'}</div>
+        ${snippet ? `<div class="feed-card-snippet">${snippet}…</div>` : ''}
+        <div class="feed-card-meta">
+          <span class="feed-card-date">${date}</span>
+          <span class="feed-card-arrow">→ Read more</span>
+        </div>
+      </a>
+    `;
+  }).join('');
 }
 
 /* ===== RENDER PACKING LIST ===== */
@@ -317,23 +396,6 @@ function initSearchButtons() {
     showToast(`Searching hotels in ${dest}`);
   });
 
-  document.getElementById('searchCarsBtn').addEventListener('click', () => {
-    const pickup = document.getElementById('carPickup').value.trim();
-    if (!pickup) { showToast('Please enter a pick-up location.'); return; }
-    const url = `https://www.kayak.com/cars/${encodeURIComponent(pickup)}`;
-    openSearch(url);
-    showToast(`Searching car rentals in ${pickup}`);
-  });
-
-  document.getElementById('searchActivitiesBtn').addEventListener('click', () => {
-    const dest = document.getElementById('activityDest').value.trim();
-    if (!dest) { showToast('Please enter a destination.'); return; }
-    const cat  = document.getElementById('activityCategory').value;
-    const q    = cat ? `${dest} ${cat}` : dest;
-    const url  = `https://www.viator.com/search/${encodeURIComponent(q)}`;
-    openSearch(url);
-    showToast(`Searching activities in ${dest}`);
-  });
 }
 
 function extractCode(str) {
@@ -515,6 +577,42 @@ function initFooterLinks() {
       const tab = document.querySelector(`.tab[data-tab="${link.dataset.tabLink}"]`);
       if (tab) tab.click();
       document.getElementById('search-section').scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+}
+
+/* ===== TRANSFER PARTNERS ===== */
+function renderTransferPartners(type) {
+  const grid = document.getElementById('partnersGrid');
+  const partners = TRANSFER_PARTNERS[type] || [];
+
+  grid.innerHTML = partners.map(p => `
+    <div class="partner-card">
+      <div class="partner-card-top">
+        <span class="partner-flag">${p.flag}</span>
+        <div>
+          <div class="partner-name">${p.name}</div>
+          <div class="partner-program">${p.program}</div>
+        </div>
+      </div>
+      <div class="partner-ratio">
+        <span class="ratio-badge">${p.ratio}</span>
+        <span class="ratio-label">MR → ${p.program}</span>
+      </div>
+      <div class="partner-value">Est. value: <strong>${p.cpp} / point</strong></div>
+      <a class="partner-check-btn" href="${p.url}" target="_blank" rel="noopener">
+        Check Award Availability →
+      </a>
+    </div>
+  `).join('');
+}
+
+function initPartnerTabs() {
+  document.querySelectorAll('.ptab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.ptab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderTransferPartners(btn.dataset.ptab);
     });
   });
 }

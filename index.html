@@ -17,7 +17,8 @@
       <ul class="nav-links">
         <li><a href="#search-section">Search</a></li>
         <li><a href="#destinations">Destinations</a></li>
-        <li><a href="#deals">Deals</a></li>
+        <li><a href="#deals">Points Deals</a></li>
+        <li><a href="#partners">Partners</a></li>
         <li><a href="#tools">Tools</a></li>
       </ul>
       <button class="nav-cta" id="savedTripsBtn">🗺 Saved Trips <span class="badge" id="savedBadge">0</span></button>
@@ -42,8 +43,6 @@
       <div class="search-tabs" role="tablist">
         <button class="tab active" data-tab="flights" role="tab" aria-selected="true">✈ Flights</button>
         <button class="tab" data-tab="hotels" role="tab" aria-selected="false">🏨 Hotels</button>
-        <button class="tab" data-tab="cars" role="tab" aria-selected="false">🚗 Cars</button>
-        <button class="tab" data-tab="activities" role="tab" aria-selected="false">🎯 Activities</button>
       </div>
 
       <!-- FLIGHTS PANEL -->
@@ -203,113 +202,6 @@
         </div>
       </div>
 
-      <!-- CARS PANEL -->
-      <div class="tab-panel" id="panel-cars">
-        <div class="form-grid">
-          <div class="form-group span2">
-            <label>Pick-up Location</label>
-            <div class="input-icon-wrap">
-              <span class="input-icon">📍</span>
-              <input type="text" id="carPickup" placeholder="Airport, city or address" />
-            </div>
-          </div>
-
-          <div class="form-group span2">
-            <label>Drop-off Location</label>
-            <div class="input-icon-wrap">
-              <span class="input-icon">📍</span>
-              <input type="text" id="carDropoff" placeholder="Same as pick-up" />
-            </div>
-          </div>
-
-          <div class="form-group span2">
-            <label>Pick-up Date &amp; Time</label>
-            <div class="input-icon-wrap">
-              <span class="input-icon">📅</span>
-              <input type="datetime-local" id="carPickupDate" />
-            </div>
-          </div>
-
-          <div class="form-group span2">
-            <label>Drop-off Date &amp; Time</label>
-            <div class="input-icon-wrap">
-              <span class="input-icon">📅</span>
-              <input type="datetime-local" id="carDropoffDate" />
-            </div>
-          </div>
-
-          <div class="form-group span2">
-            <label>Car Type</label>
-            <div class="input-icon-wrap">
-              <span class="input-icon">🚗</span>
-              <select id="carType">
-                <option value="any">Any</option>
-                <option value="economy">Economy</option>
-                <option value="compact">Compact</option>
-                <option value="suv">SUV</option>
-                <option value="minivan">Minivan</option>
-                <option value="luxury">Luxury</option>
-                <option value="electric">Electric</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div class="search-actions">
-          <div class="checkbox-row">
-            <label class="checkbox-label"><input type="checkbox" id="unlimitedMiles" checked /> Unlimited mileage</label>
-            <label class="checkbox-label"><input type="checkbox" id="freeCancel" checked /> Free cancellation</label>
-          </div>
-          <button class="search-btn" id="searchCarsBtn">Search Cars</button>
-        </div>
-      </div>
-
-      <!-- ACTIVITIES PANEL -->
-      <div class="tab-panel" id="panel-activities">
-        <div class="form-grid">
-          <div class="form-group span4">
-            <label>Where</label>
-            <div class="input-icon-wrap">
-              <span class="input-icon">🌍</span>
-              <input type="text" id="activityDest" placeholder="City, attraction or keyword" />
-            </div>
-          </div>
-
-          <div class="form-group span2">
-            <label>Date</label>
-            <div class="input-icon-wrap">
-              <span class="input-icon">📅</span>
-              <input type="date" id="activityDate" />
-            </div>
-          </div>
-
-          <div class="form-group span2">
-            <label>Category</label>
-            <div class="input-icon-wrap">
-              <span class="input-icon">🎭</span>
-              <select id="activityCategory">
-                <option value="">All Categories</option>
-                <option value="tours">Tours &amp; Sightseeing</option>
-                <option value="food">Food &amp; Drink</option>
-                <option value="adventure">Adventure &amp; Sports</option>
-                <option value="culture">Art &amp; Culture</option>
-                <option value="nature">Nature &amp; Wildlife</option>
-                <option value="nightlife">Nightlife</option>
-                <option value="wellness">Wellness &amp; Spa</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div class="search-actions">
-          <div class="checkbox-row">
-            <label class="checkbox-label"><input type="checkbox" id="freeEntry" /> Free entry only</label>
-            <label class="checkbox-label"><input type="checkbox" id="familyFriendly" /> Family friendly</label>
-          </div>
-          <button class="search-btn" id="searchActivitiesBtn">Search Activities</button>
-        </div>
-      </div>
-
     </div>
   </section>
 
@@ -335,14 +227,59 @@
     </div>
   </section>
 
-  <!-- DEALS SECTION -->
+  <!-- DEALS / LIVE FEED SECTION -->
   <section class="section deals-section" id="deals">
     <div class="section-inner">
-      <div class="section-header">
-        <h2>Hot Deals</h2>
-        <p>Limited-time offers — updated daily</p>
+      <div class="deals-header">
+        <div class="deals-title-block">
+          <div class="amex-badge">AMEX MR</div>
+          <h2>Live Points Deals</h2>
+          <p>Latest sweet spots &amp; transfer bonuses from top points blogs</p>
+        </div>
+        <button class="refresh-btn" id="refreshDealsBtn">
+          <span class="refresh-icon" id="refreshIcon">↻</span> Refresh Deals
+        </button>
       </div>
-      <div class="deals-grid" id="dealsGrid"></div>
+
+      <div class="feed-sources" id="feedSources">
+        <span class="feed-source-badge">The Points Guy</span>
+        <span class="feed-source-badge">One Mile at a Time</span>
+        <span class="feed-source-badge">View from the Wing</span>
+        <span class="feed-source-badge">Upgraded Points</span>
+        <span class="feed-source-badge">God Save the Points</span>
+      </div>
+
+      <div id="feedStatus" class="feed-status"></div>
+      <div class="deals-grid" id="dealsGrid">
+        <div class="feed-placeholder" id="feedPlaceholder">
+          <div class="feed-placeholder-icon">🔄</div>
+          <p>Hit <strong>Refresh Deals</strong> to pull the latest Amex points tips &amp; sweet spots from top blogs.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRANSFER PARTNERS -->
+  <section class="section partners-section" id="partners">
+    <div class="section-inner">
+      <div class="section-header">
+        <h2>Amex Transfer Partners</h2>
+        <p>Transfer Membership Rewards points — then verify award availability directly on the booking site</p>
+      </div>
+      <div class="partners-tabs" id="partnersTabs">
+        <button class="ptab active" data-ptab="airlines">✈ Airlines (12)</button>
+        <button class="ptab" data-ptab="hotels">🏨 Hotels (3)</button>
+      </div>
+      <div class="partners-grid" id="partnersGrid"></div>
+
+      <div class="verify-callout">
+        <div class="verify-icon">💡</div>
+        <div>
+          <strong>How to verify a deal:</strong>
+          Find a sweet spot in the feed above → note the partner airline &amp; route → click
+          <em>Check Award Availability</em> below to land directly on that partner's award search → confirm live pricing.
+        </div>
+      </div>
     </div>
   </section>
 
@@ -464,8 +401,8 @@
           <ul>
             <li><a href="#" data-tab-link="flights">Flights</a></li>
             <li><a href="#" data-tab-link="hotels">Hotels</a></li>
-            <li><a href="#" data-tab-link="cars">Car Rentals</a></li>
-            <li><a href="#" data-tab-link="activities">Activities</a></li>
+            <li><a href="#deals">Live Points Deals</a></li>
+            <li><a href="#partners">Transfer Partners</a></li>
           </ul>
         </div>
         <div>
@@ -477,12 +414,12 @@
           </ul>
         </div>
         <div>
-          <h4>We Search</h4>
+          <h4>Points Blogs</h4>
           <ul>
-            <li>Google Flights</li>
-            <li>Booking.com</li>
-            <li>Kayak</li>
-            <li>Viator</li>
+            <li>The Points Guy</li>
+            <li>One Mile at a Time</li>
+            <li>View from the Wing</li>
+            <li>Upgraded Points</li>
           </ul>
         </div>
       </div>
