@@ -253,24 +253,52 @@ function initRefreshDeals() {
 }
 
 async function fetchOneFeed(src) {
-  const proxy = 'https://api.allorigins.win/get?url=';
-  const res = await fetch(proxy + encodeURIComponent(src.url), { cache: 'no-store' });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const data = await res.json();
-  if (!data.contents) throw new Error('Empty response');
+  const proxies = [
+    rawUrl => `https://corsproxy.io/?${encodeURIComponent(rawUrl)}`,
+    rawUrl => `https://api.allorigins.win/get?url=${encodeURIComponent(rawUrl)}`,
+  ];
 
-  const xml = new DOMParser().parseFromString(data.contents, 'text/xml');
-  const items = Array.from(xml.querySelectorAll('item')).slice(0, 6).map(el => {
-    const text = tag => el.querySelector(tag)?.textContent?.trim() || '';
-    return {
-      title:       text('title'),
-      link:        text('link') || text('guid'),
-      description: text('description') || text('summary'),
-      pubDate:     text('pubDate') || text('published'),
-    };
-  }).filter(it => it.title && it.link);
+  for (const makeUrl of proxies) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 9000);
 
-  return { src, items };
+      const res = await fetch(makeUrl(src.url), {
+        cache: 'no-store',
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const text = await res.text();
+      // allorigins wraps in JSON; corsproxy returns raw XML
+      const xmlText = text.trimStart().startsWith('{')
+        ? JSON.parse(text).contents || ''
+        : text;
+
+      if (!xmlText || xmlText.length < 50) throw new Error('Empty body');
+
+      const doc = new DOMParser().parseFromString(xmlText, 'text/xml');
+      if (doc.querySelector('parsererror')) throw new Error('XML parse error');
+
+      const items = Array.from(doc.querySelectorAll('item')).slice(0, 6).map(el => {
+        const t = tag => el.querySelector(tag)?.textContent?.trim() || '';
+        return {
+          title:       t('title'),
+          link:        t('link') || t('guid'),
+          description: t('description') || t('summary'),
+          pubDate:     t('pubDate') || t('published'),
+        };
+      }).filter(it => it.title && it.link);
+
+      if (items.length === 0) throw new Error('No items found');
+      return { src, items };
+    } catch (_) {
+      // try next proxy
+    }
+  }
+  throw new Error(`All proxies failed for ${src.name}`);
 }
 
 async function fetchDeals() {
@@ -309,11 +337,20 @@ async function fetchDeals() {
 
   if (allArticles.length === 0) {
     grid.innerHTML = `
-      <div class="feed-placeholder">
-        <div class="feed-placeholder-icon">😕</div>
-        <p>Could not load feeds right now. Check your connection and try again.</p>
+      <div class="feed-placeholder" style="grid-column:1/-1">
+        <div class="feed-placeholder-icon">📡</div>
+        <p style="margin-bottom:16px">Feeds blocked by browser or network. Visit the blogs directly:</p>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center">
+          ${FEED_SOURCES.map(s => `
+            <a href="${s.url.replace('/feed/','')}/" target="_blank" rel="noopener"
+               style="padding:8px 18px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+                      border-radius:50px;color:white;font-size:.85rem;font-weight:600;text-decoration:none">
+              ${s.name} →
+            </a>
+          `).join('')}
+        </div>
       </div>`;
-    status.textContent = 'No results — try again in a moment.';
+    status.textContent = 'Could not reach feeds — try the direct links above.';
     status.className   = 'feed-status error';
     return;
   }
