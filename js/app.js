@@ -30,11 +30,11 @@ const DESTINATIONS = [
 ];
 
 const FEED_SOURCES = [
-  { name: "The Points Guy",    url: "https://thepointsguy.com/feed/",            short: "TPG"   },
-  { name: "One Mile at a Time",url: "https://onemileatatime.com/feed/",          short: "OMAAT" },
-  { name: "View from the Wing",url: "https://viewfromthewing.com/feed/",         short: "VFTW"  },
-  { name: "Upgraded Points",   url: "https://upgradedpoints.com/feed/",          short: "UP"    },
-  { name: "God Save the Points",url: "https://godsavethepoints.com/feed/",       short: "GSTP"  },
+  { name: "The Points Guy",    url: "https://thepointsguy.com/feed/",       short: "TPG"   },
+  { name: "One Mile at a Time",url: "https://onemileatatime.com/feed/",     short: "OMAAT" },
+  { name: "View from the Wing",url: "https://viewfromthewing.com/feed/",    short: "VFTW"  },
+  { name: "Upgraded Points",   url: "https://upgradedpoints.com/feed/",     short: "UP"    },
+  { name: "Prince of Travel",  url: "https://princeoftravel.com/feed/",     short: "POT"   },
 ];
 
 const AMEX_KEYWORDS = [
@@ -252,6 +252,27 @@ function initRefreshDeals() {
   document.getElementById('refreshDealsBtn').addEventListener('click', fetchDeals);
 }
 
+async function fetchOneFeed(src) {
+  const proxy = 'https://api.allorigins.win/get?url=';
+  const res = await fetch(proxy + encodeURIComponent(src.url), { cache: 'no-store' });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  if (!data.contents) throw new Error('Empty response');
+
+  const xml = new DOMParser().parseFromString(data.contents, 'text/xml');
+  const items = Array.from(xml.querySelectorAll('item')).slice(0, 6).map(el => {
+    const text = tag => el.querySelector(tag)?.textContent?.trim() || '';
+    return {
+      title:       text('title'),
+      link:        text('link') || text('guid'),
+      description: text('description') || text('summary'),
+      pubDate:     text('pubDate') || text('published'),
+    };
+  }).filter(it => it.title && it.link);
+
+  return { src, items };
+}
+
 async function fetchDeals() {
   const btn    = document.getElementById('refreshDealsBtn');
   const icon   = document.getElementById('refreshIcon');
@@ -263,7 +284,6 @@ async function fetchDeals() {
   status.textContent = 'Fetching latest deals…';
   status.className   = 'feed-status';
 
-  // Show skeleton cards while loading
   grid.innerHTML = Array(6).fill(0).map(() => `
     <div class="skeleton-card">
       <div class="skeleton-line" style="width:40%;height:10px"></div>
@@ -273,65 +293,62 @@ async function fetchDeals() {
     </div>
   `).join('');
 
-  const proxy = 'https://api.rss2json.com/v1/api.json?count=5&rss_url=';
-  const results = await Promise.allSettled(
-    FEED_SOURCES.map(src =>
-      fetch(proxy + encodeURIComponent(src.url))
-        .then(r => r.json())
-        .then(data => ({ src, items: data.items || [] }))
-    )
-  );
+  const results = await Promise.allSettled(FEED_SOURCES.map(fetchOneFeed));
 
   const allArticles = [];
+  let successCount = 0;
   results.forEach(r => {
-    if (r.status === 'fulfilled') {
-      r.value.items.forEach(item => {
-        allArticles.push({ src: r.value.src, item });
-      });
+    if (r.status === 'fulfilled' && r.value.items.length > 0) {
+      successCount++;
+      r.value.items.forEach(item => allArticles.push({ src: r.value.src, item }));
     }
   });
-
-  // Filter to points-relevant articles
-  const relevant = allArticles.filter(({ item }) => {
-    const text = ((item.title || '') + ' ' + (item.description || '')).toLowerCase();
-    return AMEX_KEYWORDS.some(kw => text.includes(kw));
-  });
-
-  const toShow = (relevant.length > 0 ? relevant : allArticles).slice(0, 12);
 
   icon.classList.remove('spinning');
   btn.disabled = false;
 
-  if (toShow.length === 0) {
-    grid.innerHTML = '<div class="feed-placeholder"><div class="feed-placeholder-icon">😕</div><p>Could not load feeds right now. Check your connection and try again.</p></div>';
+  if (allArticles.length === 0) {
+    grid.innerHTML = `
+      <div class="feed-placeholder">
+        <div class="feed-placeholder-icon">😕</div>
+        <p>Could not load feeds right now. Check your connection and try again.</p>
+      </div>`;
     status.textContent = 'No results — try again in a moment.';
     status.className   = 'feed-status error';
     return;
   }
 
-  const fetched = relevant.length > 0 ? relevant.length : allArticles.length;
-  status.textContent = `✓ Loaded ${toShow.length} articles from ${FEED_SOURCES.length} sources · ${new Date().toLocaleTimeString()}`;
+  const relevant = allArticles.filter(({ item }) => {
+    const text = (item.title + ' ' + item.description).toLowerCase();
+    return AMEX_KEYWORDS.some(kw => text.includes(kw));
+  });
+
+  const toShow = (relevant.length > 0 ? relevant : allArticles).slice(0, 12);
+
+  status.textContent = `✓ ${toShow.length} articles from ${successCount} source${successCount !== 1 ? 's' : ''} · ${new Date().toLocaleTimeString()}`;
   status.className   = 'feed-status success';
 
   grid.innerHTML = toShow.map(({ src, item }, i) => {
-    const snippet = (item.description || '')
+    const snippet = item.description
       .replace(/<[^>]+>/g, '')
-      .replace(/&[a-z]+;/gi, ' ')
+      .replace(/&[a-zA-Z#]+;/g, ' ')
+      .replace(/\s+/g, ' ')
       .trim()
       .slice(0, 180);
-    const date = item.pubDate ? new Date(item.pubDate).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '';
+    const date = item.pubDate
+      ? new Date(item.pubDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      : '';
     return `
-      <a class="feed-card fade-up" style="animation-delay:${i*50}ms"
+      <a class="feed-card fade-up" style="animation-delay:${i * 50}ms"
          href="${item.link}" target="_blank" rel="noopener">
         <span class="feed-card-source">${src.short}</span>
-        <div class="feed-card-title">${item.title || 'Untitled'}</div>
+        <div class="feed-card-title">${item.title}</div>
         ${snippet ? `<div class="feed-card-snippet">${snippet}…</div>` : ''}
         <div class="feed-card-meta">
           <span class="feed-card-date">${date}</span>
           <span class="feed-card-arrow">→ Read more</span>
         </div>
-      </a>
-    `;
+      </a>`;
   }).join('');
 }
 
