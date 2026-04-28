@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WanderSearch — Your Personal Travel Planner</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="#" class="logo">✈ WanderSearch</a>
+      <ul class="nav-links">
+        <li><a href="#search-section">Search</a></li>
+        <li><a href="#destinations">Destinations</a></li>
+        <li><a href="#deals">Deals</a></li>
+        <li><a href="#tools">Tools</a></li>
+      </ul>
+      <button class="nav-cta" id="savedTripsBtn">🗺 Saved Trips <span class="badge" id="savedBadge">0</span></button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero" id="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">Plan your next adventure</p>
+      <h1 class="hero-title">Where to next?</h1>
+      <p class="hero-sub">Flights, hotels, cars &amp; activities — all in one place</p>
+    </div>
+  </header>
+
+  <!-- SEARCH WIDGET -->
+  <section class="search-section" id="search-section">
+    <div class="search-card">
+
+      <!-- TABS -->
+      <div class="search-tabs" role="tablist">
+        <button class="tab active" data-tab="flights" role="tab" aria-selected="true">✈ Flights</button>
+        <button class="tab" data-tab="hotels" role="tab" aria-selected="false">🏨 Hotels</button>
+        <button class="tab" data-tab="cars" role="tab" aria-selected="false">🚗 Cars</button>
+        <button class="tab" data-tab="activities" role="tab" aria-selected="false">🎯 Activities</button>
+      </div>
+
+      <!-- FLIGHTS PANEL -->
+      <div class="tab-panel active" id="panel-flights">
+        <div class="trip-type-row">
+          <label class="radio-pill">
+            <input type="radio" name="tripType" value="roundtrip" checked /> Round Trip
+          </label>
+          <label class="radio-pill">
+            <input type="radio" name="tripType" value="oneway" /> One Way
+          </label>
+          <label class="radio-pill">
+            <input type="radio" name="tripType" value="multicity" /> Multi-City
+          </label>
+        </div>
+
+        <div class="form-grid" id="flightFormGrid">
+          <div class="form-group span2">
+            <label>From</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">📍</span>
+              <input type="text" id="flightFrom" placeholder="City or airport" list="airportList" autocomplete="off" />
+            </div>
+          </div>
+
+          <div class="swap-col">
+            <button class="swap-btn" id="swapBtn" title="Swap airports">⇄</button>
+          </div>
+
+          <div class="form-group span2">
+            <label>To</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">📍</span>
+              <input type="text" id="flightTo" placeholder="City or airport" list="airportList" autocomplete="off" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Depart</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">📅</span>
+              <input type="date" id="departDate" />
+            </div>
+          </div>
+
+          <div class="form-group" id="returnDateGroup">
+            <label>Return</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">📅</span>
+              <input type="date" id="returnDate" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Passengers</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">👤</span>
+              <select id="passengers">
+                <option value="1">1 Adult</option>
+                <option value="2">2 Adults</option>
+                <option value="3">3 Adults</option>
+                <option value="4">4 Adults</option>
+                <option value="2c">2 Adults + 1 Child</option>
+                <option value="3c">2 Adults + 2 Children</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Class</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">💺</span>
+              <select id="cabinClass">
+                <option value="economy">Economy</option>
+                <option value="premium">Premium Economy</option>
+                <option value="business">Business</option>
+                <option value="first">First Class</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="search-actions">
+          <div class="checkbox-row">
+            <label class="checkbox-label"><input type="checkbox" id="flexDates" /> Flexible dates (±3 days)</label>
+            <label class="checkbox-label"><input type="checkbox" id="directOnly" /> Direct flights only</label>
+          </div>
+          <button class="search-btn" id="searchFlightsBtn">Search Flights</button>
+        </div>
+      </div>
+
+      <!-- HOTELS PANEL -->
+      <div class="tab-panel" id="panel-hotels">
+        <div class="form-grid">
+          <div class="form-group span4">
+            <label>Destination</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">🏙</span>
+              <input type="text" id="hotelDest" placeholder="City, region or hotel name" />
+            </div>
+          </div>
+
+          <div class="form-group span2">
+            <label>Check-in</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">📅</span>
+              <input type="date" id="hotelCheckin" />
+            </div>
+          </div>
+
+          <div class="form-group span2">
+            <label>Check-out</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">📅</span>
+              <input type="date" id="hotelCheckout" />
+            </div>
+          </div>
+
+          <div class="form-group span2">
+            <label>Guests</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">👥</span>
+              <select id="hotelGuests">
+                <option value="1">1 Guest</option>
+                <option value="2">2 Guests</option>
+                <option value="3">3 Guests</option>
+                <option value="4">4 Guests</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group span2">
+            <label>Rooms</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">🛏</span>
+              <select id="hotelRooms">
+                <option value="1">1 Room</option>
+                <option value="2">2 Rooms</option>
+                <option value="3">3 Rooms</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="search-actions">
+          <div class="star-filter">
+            <span>Min stars:</span>
+            <div class="stars" id="starFilter">
+              <span class="star" data-val="1">★</span>
+              <span class="star" data-val="2">★</span>
+              <span class="star" data-val="3">★</span>
+              <span class="star" data-val="4">★</span>
+              <span class="star" data-val="5">★</span>
+            </div>
+          </div>
+          <button class="search-btn" id="searchHotelsBtn">Search Hotels</button>
+        </div>
+      </div>
+
+      <!-- CARS PANEL -->
+      <div class="tab-panel" id="panel-cars">
+        <div class="form-grid">
+          <div class="form-group span2">
+            <label>Pick-up Location</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">📍</span>
+              <input type="text" id="carPickup" placeholder="Airport, city or address" />
+            </div>
+          </div>
+
+          <div class="form-group span2">
+            <label>Drop-off Location</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">📍</span>
+              <input type="text" id="carDropoff" placeholder="Same as pick-up" />
+            </div>
+          </div>
+
+          <div class="form-group span2">
+            <label>Pick-up Date &amp; Time</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">📅</span>
+              <input type="datetime-local" id="carPickupDate" />
+            </div>
+          </div>
+
+          <div class="form-group span2">
+            <label>Drop-off Date &amp; Time</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">📅</span>
+              <input type="datetime-local" id="carDropoffDate" />
+            </div>
+          </div>
+
+          <div class="form-group span2">
+            <label>Car Type</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">🚗</span>
+              <select id="carType">
+                <option value="any">Any</option>
+                <option value="economy">Economy</option>
+                <option value="compact">Compact</option>
+                <option value="suv">SUV</option>
+                <option value="minivan">Minivan</option>
+                <option value="luxury">Luxury</option>
+                <option value="electric">Electric</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="search-actions">
+          <div class="checkbox-row">
+            <label class="checkbox-label"><input type="checkbox" id="unlimitedMiles" checked /> Unlimited mileage</label>
+            <label class="checkbox-label"><input type="checkbox" id="freeCancel" checked /> Free cancellation</label>
+          </div>
+          <button class="search-btn" id="searchCarsBtn">Search Cars</button>
+        </div>
+      </div>
+
+      <!-- ACTIVITIES PANEL -->
+      <div class="tab-panel" id="panel-activities">
+        <div class="form-grid">
+          <div class="form-group span4">
+            <label>Where</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">🌍</span>
+              <input type="text" id="activityDest" placeholder="City, attraction or keyword" />
+            </div>
+          </div>
+
+          <div class="form-group span2">
+            <label>Date</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">📅</span>
+              <input type="date" id="activityDate" />
+            </div>
+          </div>
+
+          <div class="form-group span2">
+            <label>Category</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">🎭</span>
+              <select id="activityCategory">
+                <option value="">All Categories</option>
+                <option value="tours">Tours &amp; Sightseeing</option>
+                <option value="food">Food &amp; Drink</option>
+                <option value="adventure">Adventure &amp; Sports</option>
+                <option value="culture">Art &amp; Culture</option>
+                <option value="nature">Nature &amp; Wildlife</option>
+                <option value="nightlife">Nightlife</option>
+                <option value="wellness">Wellness &amp; Spa</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="search-actions">
+          <div class="checkbox-row">
+            <label class="checkbox-label"><input type="checkbox" id="freeEntry" /> Free entry only</label>
+            <label class="checkbox-label"><input type="checkbox" id="familyFriendly" /> Family friendly</label>
+          </div>
+          <button class="search-btn" id="searchActivitiesBtn">Search Activities</button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- AIRPORT DATALIST -->
+  <datalist id="airportList"></datalist>
+
+  <!-- POPULAR DESTINATIONS -->
+  <section class="section" id="destinations">
+    <div class="section-inner">
+      <div class="section-header">
+        <h2>Popular Destinations</h2>
+        <p>Trending spots travelers love right now</p>
+      </div>
+      <div class="dest-filter-row">
+        <button class="dest-filter active" data-filter="all">All</button>
+        <button class="dest-filter" data-filter="beach">🏖 Beach</button>
+        <button class="dest-filter" data-filter="city">🏙 City</button>
+        <button class="dest-filter" data-filter="mountain">⛰ Mountain</button>
+        <button class="dest-filter" data-filter="culture">🏛 Culture</button>
+        <button class="dest-filter" data-filter="adventure">🧗 Adventure</button>
+      </div>
+      <div class="dest-grid" id="destGrid"></div>
+    </div>
+  </section>
+
+  <!-- DEALS SECTION -->
+  <section class="section deals-section" id="deals">
+    <div class="section-inner">
+      <div class="section-header">
+        <h2>Hot Deals</h2>
+        <p>Limited-time offers — updated daily</p>
+      </div>
+      <div class="deals-grid" id="dealsGrid"></div>
+    </div>
+  </section>
+
+  <!-- TOOLS SECTION -->
+  <section class="section tools-section" id="tools">
+    <div class="section-inner">
+      <div class="section-header">
+        <h2>Travel Tools</h2>
+        <p>Everything you need to plan smarter</p>
+      </div>
+      <div class="tools-grid">
+
+        <!-- Currency Converter -->
+        <div class="tool-card" id="currencyTool">
+          <div class="tool-icon">💱</div>
+          <h3>Currency Converter</h3>
+          <div class="currency-form">
+            <div class="currency-row">
+              <input type="number" id="currencyAmount" value="100" min="0" step="0.01" />
+              <select id="currencyFrom">
+                <option value="USD">USD — US Dollar</option>
+                <option value="EUR">EUR — Euro</option>
+                <option value="GBP">GBP — British Pound</option>
+                <option value="JPY">JPY — Japanese Yen</option>
+                <option value="CAD">CAD — Canadian Dollar</option>
+                <option value="AUD">AUD — Australian Dollar</option>
+                <option value="CHF">CHF — Swiss Franc</option>
+                <option value="CNY">CNY — Chinese Yuan</option>
+                <option value="INR">INR — Indian Rupee</option>
+                <option value="MXN">MXN — Mexican Peso</option>
+                <option value="BRL">BRL — Brazilian Real</option>
+                <option value="SGD">SGD — Singapore Dollar</option>
+                <option value="THB">THB — Thai Baht</option>
+              </select>
+            </div>
+            <div class="currency-equals">⇅</div>
+            <div class="currency-row">
+              <input type="number" id="currencyResult" readonly placeholder="Result" />
+              <select id="currencyTo">
+                <option value="EUR">EUR — Euro</option>
+                <option value="USD">USD — US Dollar</option>
+                <option value="GBP">GBP — British Pound</option>
+                <option value="JPY">JPY — Japanese Yen</option>
+                <option value="CAD">CAD — Canadian Dollar</option>
+                <option value="AUD">AUD — Australian Dollar</option>
+                <option value="CHF">CHF — Swiss Franc</option>
+                <option value="CNY">CNY — Chinese Yuan</option>
+                <option value="INR">INR — Indian Rupee</option>
+                <option value="MXN">MXN — Mexican Peso</option>
+                <option value="BRL">BRL — Brazilian Real</option>
+                <option value="SGD">SGD — Singapore Dollar</option>
+                <option value="THB">THB — Thai Baht</option>
+              </select>
+            </div>
+            <p class="exchange-rate" id="exchangeRateDisplay"></p>
+          </div>
+        </div>
+
+        <!-- Packing Checklist -->
+        <div class="tool-card" id="packingTool">
+          <div class="tool-icon">🧳</div>
+          <h3>Packing Checklist</h3>
+          <div class="packing-categories" id="packingCategories"></div>
+        </div>
+
+        <!-- Trip Budget Estimator -->
+        <div class="tool-card" id="budgetTool">
+          <div class="tool-icon">💰</div>
+          <h3>Trip Budget Estimator</h3>
+          <div class="budget-form">
+            <div class="form-group">
+              <label>Destination</label>
+              <input type="text" id="budgetDest" placeholder="e.g. Paris, Tokyo..." />
+            </div>
+            <div class="form-group">
+              <label>Trip Length (days)</label>
+              <input type="number" id="budgetDays" value="7" min="1" max="365" />
+            </div>
+            <div class="form-group">
+              <label>Travel Style</label>
+              <select id="budgetStyle">
+                <option value="budget">Budget Backpacker</option>
+                <option value="mid" selected>Mid-range</option>
+                <option value="luxury">Luxury</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Travelers</label>
+              <input type="number" id="budgetTravelers" value="2" min="1" max="10" />
+            </div>
+            <button class="tool-btn" id="estimateBudgetBtn">Estimate Budget</button>
+            <div class="budget-result" id="budgetResult"></div>
+          </div>
+        </div>
+
+        <!-- Saved Trips -->
+        <div class="tool-card" id="savedTripsTool">
+          <div class="tool-icon">🗺</div>
+          <h3>Saved Trips</h3>
+          <div class="saved-trips-list" id="savedTripsList">
+            <p class="empty-state">No saved trips yet.<br/>Search and save your favorites!</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="logo">✈ WanderSearch</span>
+        <p>Your personal travel search companion. We search the web's top travel sites so you don't have to.</p>
+      </div>
+      <div class="footer-links">
+        <div>
+          <h4>Search</h4>
+          <ul>
+            <li><a href="#" data-tab-link="flights">Flights</a></li>
+            <li><a href="#" data-tab-link="hotels">Hotels</a></li>
+            <li><a href="#" data-tab-link="cars">Car Rentals</a></li>
+            <li><a href="#" data-tab-link="activities">Activities</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Tools</h4>
+          <ul>
+            <li><a href="#currencyTool">Currency Converter</a></li>
+            <li><a href="#packingTool">Packing List</a></li>
+            <li><a href="#budgetTool">Budget Estimator</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>We Search</h4>
+          <ul>
+            <li>Google Flights</li>
+            <li>Booking.com</li>
+            <li>Kayak</li>
+            <li>Viator</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 WanderSearch. Built for explorers.</p>
+    </div>
+  </footer>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast" id="toast"></div>
+
+  <!-- SAVED TRIPS MODAL -->
+  <div class="modal-overlay" id="savedTripsModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>🗺 Your Saved Trips</h3>
+        <button class="modal-close" id="closeSavedModal">✕</button>
+      </div>
+      <div class="modal-body" id="savedTripsModalBody"></div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
